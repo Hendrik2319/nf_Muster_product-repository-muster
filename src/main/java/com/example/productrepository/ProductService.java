@@ -2,6 +2,7 @@ package com.example.productrepository;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,17 @@ public class ProductService {
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    public List<Product> findAllProductsBelowOrEqualTo(int price) {
+        ArrayList<Product> products = new ArrayList<>();
+
+        List<Product> allProducts = getAllProducts();
+        for (Product product : allProducts)
+            if (product.price() <= price)
+                products.add(product);
+
+        return products;
     }
 
     public Product addProduct(NewProduct newProduct) {

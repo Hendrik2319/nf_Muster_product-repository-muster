@@ -16,8 +16,10 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAllProducts(){
-      return productService.getAllProducts();
+    public List<Product> getAllProducts(@Nullable @RequestParam Integer price){
+        if (price != null)
+            return productService.findAllProductsBelowOrEqualTo(price);
+        return productService.getAllProducts();
     }
 
     @PostMapping
