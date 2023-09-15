@@ -3,6 +3,7 @@ package com.example.productrepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,5 +26,9 @@ public class ProductService {
                 newProduct.price()
         );
         return productRepository.save(product);
+    }
+
+    public Optional<Product> getProduct(String id) {
+        return productRepository.findById(id);
     }
 }
