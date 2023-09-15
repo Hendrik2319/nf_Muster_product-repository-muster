@@ -1,23 +1,26 @@
 package com.example.productrepository;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("api/products")
 public class ProductController {
-    private final ProductRepository productRepository;
+    private final ProductService productService;
 
-    public ProductController(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
-    @GetMapping()
+    @GetMapping
     public List<Product> getAllProducts(){
-      return this.productRepository.findAll();
+      return productService.getAllProducts();
+    }
+
+    @PostMapping
+    public Product addProduct(@RequestBody NewProduct newProduct){
+        return productService.addProduct(newProduct);
     }
 
 }
