@@ -4,15 +4,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final IdService idService;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, IdService idService) {
         this.productRepository = productRepository;
+        this.idService = idService;
     }
 
     public List<Product> getAllProducts() {
@@ -21,7 +22,7 @@ public class ProductService {
 
     public Product addProduct(NewProduct newProduct) {
         Product product = new Product(
-                UUID.randomUUID().toString(),
+                idService.generateId(),
                 newProduct.title(),
                 newProduct.price()
         );
