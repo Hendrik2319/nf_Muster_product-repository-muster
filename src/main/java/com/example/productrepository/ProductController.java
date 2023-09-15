@@ -1,9 +1,10 @@
 package com.example.productrepository;
 
+import com.mongodb.lang.Nullable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api/products")
@@ -25,8 +26,20 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Product> getProducts(@PathVariable String id) {
-        return productService.getProduct(id);
+    public ResponseEntity<Product> getProduct(@PathVariable String id) {
+        return ResponseEntity.of(productService.getProduct(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public String removeProduct(@PathVariable String id) {
+        productService.removeProduct(id);
+        return "OK";
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable String id, @Nullable @RequestParam String title, @Nullable @RequestParam Integer price) {
+        //System.out.printf("updateProduct( %s, %s, %d )%n", id, title, price);
+        return ResponseEntity.of(productService.updateProduct(id,title,price));
     }
 
 }
