@@ -23,6 +23,24 @@ class ProductServiceTest {
     }
 
     @Test
+    void addProduct() {
+        // Given
+        when(idService.generateId()).thenReturn("456");
+        when(productRepository.save(new Product("456","dsdsf",45))).thenReturn(
+                new Product("456","dsdsf",45)
+        );
+
+        // When
+        Product actual = productService.addProduct(new NewProduct("dsdsf",45));
+
+        // Then
+        verify(idService).generateId();
+        verify(productRepository).save(new Product("456","dsdsf",45));
+        Product expected = new Product("456","dsdsf",45);
+        assertEquals(expected, actual);
+    }
+
+    @Test
     void whenGetAllProducts_calledWithEmptyRepo_returnEmptyList() {
         // Given
         when(productRepository.findAll()).thenReturn(List.of());
@@ -31,6 +49,7 @@ class ProductServiceTest {
         List<Product> actual = productService.getAllProducts();
 
         // Then
+        verify(productRepository).findAll();
         List<Object> expected = List.of();
         assertEquals(expected, actual);
     }
@@ -50,7 +69,6 @@ class ProductServiceTest {
         List<Product> actual = productService.getAllProducts();
 
         // Then
-
         verify(productRepository).findAll();
         List<Product> expected = List.of(
                 new Product("123","Title1",12),
