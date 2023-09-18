@@ -50,7 +50,7 @@ class ProductIntegrationTest {
                         .get("/api/products")
                 )
 
-                // Then
+        // Then
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                     [
@@ -94,9 +94,115 @@ class ProductIntegrationTest {
                         .delete("/api/products/id1")
                 )
 
-                // Then
+        // Then
                 .andExpect(status().isOk())
                 .andExpect(content().string("OK"))
+        ;
+    }
+
+    @Test
+    @DirtiesContext
+    void whenGetProduct_getsValidProductId_returnsProduct() throws Exception {
+        // Given
+        productRepository.save(new Product("id1", "Title 1", 101));
+
+        // When
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/api/products/id1")
+                )
+
+        // Then
+                .andExpect(status().isOk())
+                .andExpect(content().json("{ \"id\": \"id1\", \"title\":\"Title 1\", \"price\":101 }"))
+        ;
+    }
+
+    @Test
+    @DirtiesContext
+    void whenGetProduct_getsInvalidProductId_returns404() throws Exception {
+        // Given
+        productRepository.save(new Product("id1", "Title 1", 101));
+
+        // When
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .get("/api/products/idX")
+                )
+
+        // Then
+                .andExpect(status().isNotFound())
+        ;
+    }
+
+    @Test
+    @DirtiesContext
+    void whenUpdateProduct_getsInvalidProductId_returns404() throws Exception {
+        // Given
+        productRepository.save(new Product("id1", "Title 1", 101));
+
+        // When
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/api/products/idX")
+                )
+
+        // Then
+                .andExpect(status().isNotFound())
+        ;
+    }
+
+    @Test
+    @DirtiesContext
+    void whenUpdateProduct_getsValidProductIdAndTitle_returnsChangedProduct() throws Exception {
+        // Given
+        productRepository.save(new Product("id1", "Title 1", 101));
+
+        // When
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/api/products/id1?title=Test Text")
+                )
+
+        // Then
+                .andExpect(status().isOk())
+                .andExpect(content().json("{ \"id\": \"id1\", \"title\":\"Test Text\", \"price\":101 }"))
+        ;
+    }
+
+    @Test
+    @DirtiesContext
+    void whenUpdateProduct_getsValidProductIdAndPrice_returnsChangedProduct() throws Exception {
+        // Given
+        productRepository.save(new Product("id1", "Title 1", 101));
+
+        // When
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/api/products/id1?price=25")
+                )
+
+        // Then
+                .andExpect(status().isOk())
+                .andExpect(content().json("{ \"id\": \"id1\", \"title\":\"Title 1\", \"price\":25 }"))
+        ;
+    }
+
+    @Test
+    @DirtiesContext
+    void whenUpdateProduct_getsValidProductIdTitleAndPrice_returnsChangedProduct() throws Exception {
+        // Given
+        productRepository.save(new Product("id1", "Title 1", 101));
+
+        // When
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .put("/api/products/id1?title=Test Text&price=25")
+                )
+
+        // Then
+                .andExpect(status().isOk())
+                .andExpect(content().json("{ \"id\": \"id1\", \"title\":\"Test Text\", \"price\":25 }"))
         ;
     }
 
