@@ -8,9 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -23,24 +24,56 @@ class ProductIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private String addProduct(String title, int price) throws Exception {
-        String body = mockMvc
+    private String addProduct(String title, int price) {
+        try {
+
+            ResultActions resultActions = mockMvc
+                    .perform(MockMvcRequestBuilders
+                            .post("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                        { "title":"%s", "price":%d }
+                                    """.formatted(title, price))
+                    )
+                    .andExpect(status().isOk());
+
+            return getIdFromResultProduct(title, price, resultActions);
+
+        } catch (Exception e) {
+            System.err.printf("%s while parsing response: %s%n", e.getClass().getSimpleName(), e.getMessage());
+            return null;
+        }
+    }
+
+    private String getIdFromResultProduct(String title, int price, ResultActions resultActions) {
+        try {
+            String body = resultActions
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            Product product = objectMapper.readValue(body, Product.class);
+
+            assertNotNull(product);
+            assertEquals(title, product.title());
+            assertEquals(price, product.price());
+
+            return product.id();
+
+        } catch (Exception e) {
+            System.err.printf("%s while parsing response: %s%n", e.getClass().getSimpleName(), e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean repoContainsProduct(String id) throws Exception {
+        return mockMvc
                 .perform(MockMvcRequestBuilders
-                        .post("/api/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                            { "title":"%s", "price":%d }
-                        """.formatted(title, price))
+                        .get("/api/products/%s".formatted(id))
                 )
-                .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
-
-        Product product = objectMapper.readValue(body, Product.class);
-        assertEquals(title, product.title());
-        assertEquals(price, product.price());
-        return product.id();
+                .getStatus() == 200;
     }
 
     @Test
@@ -91,18 +124,21 @@ class ProductIntegrationTest {
         // Given
 
         // When
-        mockMvc
+        ResultActions resultActions = mockMvc
                 .perform(MockMvcRequestBuilders
                         .post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ \"title\":\"Title 1\", \"price\":101 }")
                 )
 
-        // Then
+                // Then
                 .andExpect(status().isOk())
                 .andExpect(content().json("{ \"title\":\"Title 1\", \"price\":101 }"))
-                .andExpect(jsonPath("$.id").isString())
-        ;
+                .andExpect(jsonPath("$.id").isString());
+
+        String id = getIdFromResultProduct("Title 1", 101, resultActions);
+        assertNotNull( id );
+        assertTrue( repoContainsProduct(id) );
     }
 
     @Test
@@ -110,6 +146,7 @@ class ProductIntegrationTest {
     void whenRemoveProduct_getsProductId_returnsOk() throws Exception {
         // Given
         String id = addProduct("Title 1", 101);
+        assertTrue( repoContainsProduct(id) );
 
         // When
         mockMvc
@@ -121,6 +158,8 @@ class ProductIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("OK"))
         ;
+
+        assertFalse( repoContainsProduct(id) );
     }
 
     @Test
