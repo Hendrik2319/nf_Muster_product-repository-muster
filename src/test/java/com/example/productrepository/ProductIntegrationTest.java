@@ -46,7 +46,9 @@ class ProductIntegrationTest {
 
         // When
         mockMvc
-                .perform(MockMvcRequestBuilders.get("/api/products"))
+                .perform(MockMvcRequestBuilders
+                        .get("/api/products")
+                )
 
                 // Then
                 .andExpect(status().isOk())
@@ -64,9 +66,6 @@ class ProductIntegrationTest {
     @DirtiesContext
     void whenAddProduct_getsNewProduct_returnsProduct() throws Exception {
         // Given
-        productRepository.save(new Product("id1", "Title 1", 101));
-        productRepository.save(new Product("id2", "Title 2", 102));
-        productRepository.save(new Product("id3", "Title 3", 103));
 
         // When
         mockMvc
@@ -80,6 +79,24 @@ class ProductIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json("{ \"title\":\"Title 1\", \"price\":101 }"))
                 .andExpect(jsonPath("$.id").isString())
+        ;
+    }
+
+    @Test
+    @DirtiesContext
+    void whenRemoveProduct_getsProductId_returnsOk() throws Exception {
+        // Given
+        productRepository.save(new Product("id1", "Title 1", 101));
+
+        // When
+        mockMvc
+                .perform(MockMvcRequestBuilders
+                        .delete("/api/products/id1")
+                )
+
+                // Then
+                .andExpect(status().isOk())
+                .andExpect(content().string("OK"))
         ;
     }
 
